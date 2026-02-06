@@ -16,12 +16,11 @@ interface createGroupFormData {
 export default function Home() {
   // Переменные
   const [isCreateGroupModalOpen, setIsCreatGroupModalOpen] = useState(false);
-  
   // Функции открытия закрытия модальных окон
   const openCreateGroupModal = () => setIsCreatGroupModalOpen(true);
   const closeCreateGroupModal = () => setIsCreatGroupModalOpen(false);
-
   const [groupList, setGroupList] = useState<Group[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   // Загружаем группы
   useEffect(() => {
@@ -34,10 +33,10 @@ export default function Home() {
       const response = await fetch('/api/groups', {method: 'GET'});
       const groups: Group[] = await response.json();
       setGroupList(groups || []);
-      console.log("1")
     } catch (error) {
       console.log(error)
     }
+    setIsLoading(false);
   }
   // Функция создания группы
   const createGroup = async (groupData: createGroupFormData) => {
@@ -85,6 +84,20 @@ export default function Home() {
 
     await createGroup(newGroupData);
   }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-white">
+        <div className="relative mb-4">
+          {/* Тонкое кольцо */}
+          <div className="animate-spin rounded-full h-16 w-16 border-2 border-transparent border-t-blue-500 border-r-transparent"></div>
+        </div>
+        <div className="text-gray-500 font-medium tracking-wide">Загрузка данных<span className="loading-dots"></span></div>
+        <div className="mt-2 text-gray-400 text-sm">Пожалуйста, подождите</div>
+      </div>
+    );
+  }
+
   return (
     <div> 
       {isCreateGroupModalOpen && (
@@ -132,7 +145,7 @@ export default function Home() {
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-5">Учебные группы
               <button className="bg-[#6D6FF3] text-sm text-white w-9 h-9 rounded-lg duration-300 hover:scale-90"
-                  onClick={openCreateGroupModal}>+</button>
+                  onClick={openCreateGroupModal}><p className="text-lg">+</p></button>
             </h2>
             <p className="text-muted-foreground">Выберите группу для просмотра и редактирования расписания</p>
           </div>
