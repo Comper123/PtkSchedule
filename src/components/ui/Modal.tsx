@@ -9,21 +9,23 @@ interface ModalProps {
     onClose: () => void;
     title?: string;
     children: ReactNode;
-    size?: 'sm' | 'md' | 'lg' | 'xl';
-    type?: 'default'| 'error' | 'success' | 'warning'
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    type?: 'default'| 'error' | 'success' | 'warning';
+    message?: string;
 }
 
 export default function Modal({
     isOpen, onClose, title, children, 
     size = 'md', 
-    type = 'default'
+    type = 'default', message = ""
 } : ModalProps){
 
     // Ничего не выводим если модальное закрыто
     if (!isOpen) return null;
 
     const widthClasses = {
-        sm: 'w-1/5',
+        xs: 'w-1/5',
+        sm: 'w-[30%]',
         md: 'w-2/5',
         lg: 'w-3/5',
         xl: 'w-4/5'
@@ -55,6 +57,21 @@ export default function Modal({
                 closeModal();
               }}></X>
             </div>
+            {type !== 'default' && (
+              <div className={`rounded-xl`}>
+                {type === "error" && (
+                  <div></div>
+                )}
+
+                {type === "warning" && (
+                  <div></div>
+                )}
+
+                {type === "success" && (
+                  <div></div>
+                )}
+              </div>
+            )}
             <div>
               {children}
             </div>

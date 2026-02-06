@@ -5,7 +5,7 @@ import { db } from "../../../../lib/db/db";
 import { Group, groups, Lesson, LessonSelect } from "../../../../lib/db/schema";
 import EmptyPage from "@/components/EmptyPage";
 import { notFound, useParams } from "next/navigation";
-import React, { use, useCallback, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, use, useCallback, useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import Link from "next/link";
 import { ArrowLeft, Plus, X, Ban } from "lucide-react";
@@ -61,6 +61,10 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
   const [editSelectedDay, setEditSelectedDay] = useState<string>("");
   const [editSelectedTime, setEditSelectedTime] = useState<string>("");
   const [editLessonColor, setEditLessonColor] = useState<string>("");
+
+  // Состояния для удаления уроков
+  const [isOpenModalDeleteLesson, setOpenModalDeleteLesson] = useState<boolean>(false);
+  const [deletedLessonTitle, setDeleteLessonTitle] = useState("");
 
   const fetchGroupLesson = useCallback(async (id: number) => {
     try {
@@ -209,12 +213,23 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
 
   // Функция изменения урока
   const editLesson = async (lessonData: LessonFormData, lessonId: number | undefined) => {
+    setIsLoading(true);
     try {
-      const resp = fetch(`/api/lessons/edit/${lessonId}`);
-    } catch {
-
+      const resp = fetch(`/api/lessons/edit/${lessonId}`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(lessonData)
+      });
+      // Получаем измененный урок
+      const lesson: LessonSelect = await (await resp).json();
+      editCasheLesson(lesson, lessonId);
+      closeModalEditLesson();
+    } catch (error) {
+      console.log(error);
     } finally {
-
+      setIsLoading(false);
     }
   }
 
@@ -248,9 +263,40 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
       day: formData.get('day') as DayOfWeek,
       time: formData.get('time') as LessonTime,
       group_number: groupNumber as number,
-      color: newLessonColorInput.current?.value as string
+      color: formData.get('color') as string
     }
     editLesson(newLessonData, lessonId);
+  }
+
+  // Обработчик для полей ввода редактирования урока
+  const changeEditedLessonProperty = async(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const {name, value} = e.target;
+    setEditedLesson(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  // Фукнция для локального изменения
+  const editCasheLesson = (newLesson: LessonSelect, lessonId: number | undefined) => {
+    setLessons(prevLessons => {
+      if (!prevLessons) return [newLesson];
+      return prevLessons.map(lesson => 
+        lesson.id === lessonId ? newLesson : lesson
+      )
+    })
+  }
+
+  // Фукнция открытия модального окна удаления урока
+  function openDeleteLessonModal(){
+    setOpenModalEditLesson(false);
+    setOpenModalDeleteLesson(true);
+    setDeleteLessonTitle(editedLesson?.subject || "");
+  }
+
+  // Фукнция закрытия модального окна удаления урока
+  function closeModalDeleteLesson(){
+    setOpenModalDeleteLesson(false);
   }
 
   if (isLoading) {
@@ -364,22 +410,23 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
             <div className="grid grid-cols-7 gap-5">
               <div className="col-span-6">
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Предмет <span className="text-red-700">*</span></label>
-                <input type="text" maxLength={100} id="subject" name="subject" placeholder="Введите название предмета" value={editedLesson?.subject || ""} required 
+                <input type="text" maxLength={100} id="subject" name="subject" placeholder="Введите название предмета" 
+                  value={editedLesson?.subject || ""} onChange={changeEditedLessonProperty} required 
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400"
                 />
               </div>
               <div className="col-span-1">
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Цвет<span className="text-red-700">*</span></label>
                 <div className="flex items-center w-full h-12">
-                  <input type="color" ref={editLessonColorInput} id="color" value={editedLesson?.color || "#000"}
-                    onChange={(e) => setEditLessonColor(e.target.value)} 
+                  <input type="color" name='color' ref={editLessonColorInput} id="color" value={editedLesson?.color || "#000"}
+                    onChange={changeEditedLessonProperty} 
                     className="cursor-pointer rounded-lg border border-gray-300 w-0 h-0"
                   />
                   <div className="h-10 w-10 aspect-square flex items-center gap-2"
                     onClick={() => editLessonColorInput.current?.click()}>
                     <div 
                       className="h-full w-full rounded-full border border-gray-300"
-                      style={{ backgroundColor: editLessonColor || editedLesson?.color || "#000" }}></div>
+                      style={{ backgroundColor: editedLesson?.color || "#000" }}></div>
                   </div>
                 </div>
               </div>
@@ -388,19 +435,21 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
               <div className="col-span-4">
                 <label htmlFor="teacher" className="block text-sm font-medium text-gray-700 mb-1">Учитель<span className="text-red-700">*</span></label>
                 <input 
-                  type="text" id="teacher" name="teacher" maxLength={100} placeholder="Имя преподавателя" value={editedLesson?.teacher || ""} required
+                  type="text" id="teacher" name="teacher" maxLength={100} placeholder="Имя преподавателя" 
+                  value={editedLesson?.teacher || ""} onChange={changeEditedLessonProperty} required
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400" />
               </div>
               <div className="col-span-1">
                 <label htmlFor="room" className="block text-sm font-medium text-gray-700 mb-1">Кабинет<span className="text-red-700">*</span></label>
-                <input type="text" maxLength={6} id="room" name="room" placeholder="Номер" value={editedLesson?.room || ""} required
+                <input type="text" maxLength={6} id="room" name="room" placeholder="Номер" 
+                  value={editedLesson?.room || ""} onChange={changeEditedLessonProperty} required
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400"/>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-5">
               <div>
                 <label htmlFor="day" className="block text-sm font-medium text-gray-700 mb-1">День недели<span className="text-red-700">*</span></label>
-                <select name="day" id="day" value={editSelectedDay} required
+                <select name="day" id="day" value={editSelectedDay} onChange={changeEditedLessonProperty} required
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400">
                     <option value="" >Выберите день недели</option>
                     {dayWeekOptions.map((dayWeek) => (
@@ -410,7 +459,7 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
               </div>
               <div>
                 <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">Время<span className="text-red-700">*</span></label>
-                <select name="time" id="time" value={editSelectedTime} required
+                <select name="time" id="time" value={editSelectedTime} onChange={changeEditedLessonProperty} required
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-gray-900 placeholder-gray-400">
                     <option value="">Выберите время</option>
                     {lessonTimeOptions.map((lessonTime) => (
@@ -419,11 +468,21 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
                 </select>
               </div>
             </div>
-            <button className="bg-[#6D6FF3] text-white py-2 px-7 rounded-lg w-max self-end hover:scale-95 duration-300 bg-opacity-70 hover:bg-opacity-100">Добавить</button>
+            <div className="flex gap-3 justify-end">
+              <button type="button" className="bg-[#ff2c2c] text-white py-2 px-7 rounded-lg w-max self-end hover:scale-95 duration-300 bg-opacity-70 hover:bg-opacity-100" onClick={openDeleteLessonModal}>Удалить</button>
+              <button className="bg-[#6D6FF3] text-white py-2 px-7 rounded-lg w-max self-end hover:scale-95 duration-300 bg-opacity-70 hover:bg-opacity-100">Изменить</button>
+            </div>
           </form>
         </Modal>
       )}
       
+      {isOpenModalDeleteLesson && (
+        <Modal isOpen={isOpenModalDeleteLesson} onClose={closeModalDeleteLesson}
+          title="Удаление занятия" size='sm'>
+            <p className="my-4">{deletedLessonTitle}</p>
+        </Modal>
+      )}
+
       {group ? (
         <div className="w-screen h-screen flex items-center flex-col">
           <header className="border-b w-full">
