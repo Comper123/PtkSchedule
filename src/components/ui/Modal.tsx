@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from "lucide-react";
+import { OctagonX, X } from "lucide-react";
 import React, { ReactNode, useState } from "react";
 
 
@@ -58,9 +58,14 @@ export default function Modal({
               }}></X>
             </div>
             {type !== 'default' && (
-              <div className={`rounded-xl`}>
+              <div>
                 {type === "error" && (
-                  <div></div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <OctagonX className="h-4 w-4 text-red-500 flex-shrink-0" />
+                      <p className="text-sm text-red-700">{message}</p>
+                    </div>
+                  </div>
                 )}
 
                 {type === "warning" && (

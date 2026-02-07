@@ -80,7 +80,7 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
       const lessonsData: LessonSelect[] = await response.json();
       
       setLessons(lessonsData);
-      console.log("Уроки загружены:", lessons);
+      console.log("Уроки загружены:", lessonsData);
     } catch (error) {
       console.error("Ошибка загрузки уроков:", error);
       setError("Не удалось загрузить уроки группы");
@@ -299,6 +299,27 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
     setOpenModalDeleteLesson(false);
   }
 
+  // Удаление урока
+  const deleteLesson = async() => {
+    try {
+      const lessonId = editedLesson?.id;
+      const resp = await fetch(`/api/lessons/delete/${lessonId}`, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      // Удаляем на клиенте из массива уроков
+      if (resp.ok){
+        
+      }
+    } catch (error) {
+
+    } finally {
+      
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-white">
@@ -354,7 +375,7 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
                     onChange={(e) => setNewLessonColor(e.target.value)} 
                     className="cursor-pointer rounded-lg border border-gray-300 w-0 h-0"
                   />
-                  <div className="h-10 w-10 aspect-square flex items-center gap-2"
+                  <div className="h-10 w-10 aspect-square flex items-center gap-2 hover:cursor-pointer"
                     onClick={() => newLessonColorInput.current?.click()}>
                     <div 
                       className="h-full w-full rounded-full border border-gray-300"
@@ -422,7 +443,7 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
                     onChange={changeEditedLessonProperty} 
                     className="cursor-pointer rounded-lg border border-gray-300 w-0 h-0"
                   />
-                  <div className="h-10 w-10 aspect-square flex items-center gap-2"
+                  <div className="h-10 w-10 aspect-square flex items-center gap-2 hover:cursor-pointer"
                     onClick={() => editLessonColorInput.current?.click()}>
                     <div 
                       className="h-full w-full rounded-full border border-gray-300"
@@ -477,9 +498,13 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
       )}
       
       {isOpenModalDeleteLesson && (
-        <Modal isOpen={isOpenModalDeleteLesson} onClose={closeModalDeleteLesson}
-          title="Удаление занятия" size='sm'>
-            <p className="my-4">{deletedLessonTitle}</p>
+        <Modal isOpen={isOpenModalDeleteLesson} onClose={closeModalDeleteLesson} type="error"
+          title="Удаление занятия" size='sm' message="Вы действительно хотите удалить занятие?">
+            <p className="my-2 text-gray-600 font-medium">{deletedLessonTitle}</p>
+            <div className="flex gap-3 justify-end">
+              <button className="bg-[#909090] text-white py-2 px-7 rounded-lg w-max self-end hover:scale-95 duration-300 bg-opacity-70 hover:bg-opacity-100" onClick={closeModalDeleteLesson}>Отмена</button>
+              <button type="button" className="bg-[#ff2c2c] text-white py-2 px-7 rounded-lg w-max self-end hover:scale-95 duration-300 bg-opacity-70 hover:bg-opacity-100" onClick={deleteLesson}>Удалить</button>
+            </div>
         </Modal>
       )}
 
