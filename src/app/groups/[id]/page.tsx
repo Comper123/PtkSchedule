@@ -302,21 +302,25 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
   // Удаление урока
   const deleteLesson = async() => {
     try {
+      setIsLoading(true);
       const lessonId = editedLesson?.id;
       const resp = await fetch(`/api/lessons/delete/${lessonId}`, {
-        method: "DELETE",
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        method: "DELETE"
       })
       // Удаляем на клиенте из массива уроков
-      if (resp.ok){
-        
+      if (resp.status === 204){
+        setLessons(prevLessons => {
+          if (!prevLessons) return [];
+          return prevLessons.filter(lesson => lesson.id !== lessonId);
+        });
+        setOpenModalDeleteLesson(false);
+      } else {
+        console.log(await resp.json())
       }
     } catch (error) {
-
+      console.log(error)
     } finally {
-      
+       setIsLoading(false);
     }
   }
 
