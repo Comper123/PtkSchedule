@@ -66,6 +66,10 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
   const [isOpenModalDeleteLesson, setOpenModalDeleteLesson] = useState<boolean>(false);
   const [deletedLessonTitle, setDeleteLessonTitle] = useState("");
 
+  // Работа с перетаскиванием урока
+  const [draggedLesson, setDraggedLesson] = useState<LessonSelect | null>(null);
+  const [dragOverCell, setDragOverCell] = useState<{ day: string; time: string } | null>(null);
+
   const fetchGroupLesson = useCallback(async (id: number) => {
     try {
       setIsLoading(true);
@@ -324,6 +328,40 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
     }
   }
 
+  // ============================== Работа с перетаскиванием элементов
+  // Обработчик начала перетаскивания
+  const handleDragStart = (e: React.DragEvent, lesson: LessonSelect) => {
+    e.dataTransfer.setData('lesson', JSON.stringify(lesson));
+    setDraggedLesson(lesson);
+  }
+
+  // Функция перетаскивания над ячейкой
+  const handleDragOver = (e:React.DragEvent, day: string, time: string) => {
+    e.preventDefault();
+    setDragOverCell({day, time});
+  }
+
+  // Обработчик ухода с ячейки во время перетаскивания
+  const handleDragLeave = () => {
+    setDragOverCell(null);
+  };
+
+  // Функция бросания
+  const handleDrop = async (e:React.DragEvent, day: string, timeSlot: string) => {
+    e.preventDefault();
+    // 1. Получаем данные урока
+    const lessonData = JSON.parse(e.dataTransfer.getData('lesson')) as LessonSelect;
+    
+    setLessons(prev => {
+      if (!prev) return [];
+      return prev.map(lesson => 
+        lesson.id === lessonData.id 
+          ? { ...lesson, day_week: day as DayOfWeek, time: TIME_RANGES[timeSlot] as LessonTime}
+          : lesson
+      );
+    });
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-white">
@@ -565,12 +603,17 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
                         </td>
                         {DAYS.map((day, dayIndex) => {
                           const lesson = lessons?.find(item => item.day_week == day && item.time?.startsWith(timeSlot));
+                          const isDragOver = dragOverCell?.day === day && TIME_RANGES[timeSlot] === dragOverCell?.time;
                           return (
                             <td key={dayIndex} className="border-l p-1 relative">
                                 {lesson ? (
-                                  <div className="px-2 flex flex-col absolute top-2 shadow-md pt-1 bottom-2 left-1 right-1 rounded-md hover:-translate-y-1 duration-300 cursor-pointer hover:shadow-xl"
+                                  <div className={`
+                                  ${isDragOver ? 'ring-2 ring-blue-500 ring-inset' : ''}}
+                                  px-2 flex flex-col absolute top-2 shadow-md pt-1 bottom-2 left-1 right-1 rounded-md hover:-translate-y-1 duration-300 cursor-pointer hover:shadow-xl`}
                                   style={{ borderLeft: `4px solid ${lesson.color}`}}
-                                  onClick={() => openModalEditLesson(day, TIME_RANGES[timeSlot])}>
+                                  onClick={() => openModalEditLesson(day, TIME_RANGES[timeSlot])}
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(e, lesson)}>
                                     <div className="flex gap-2 w-full justify-between">
                                       <p className="font-semibold text-sm">{lesson.subject}</p>
                                       <p className="text-sm bg-slate-200 py-0.5 px-2 rounded-md h-max min-w-12 text-center">{lesson.room}</p>
