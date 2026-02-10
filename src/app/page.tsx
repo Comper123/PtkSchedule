@@ -13,6 +13,7 @@ interface createGroupFormData {
 }
 
 
+
 export default function Home() {
   // Переменные
   const [isCreateGroupModalOpen, setIsCreatGroupModalOpen] = useState(false);
@@ -21,6 +22,9 @@ export default function Home() {
   const closeCreateGroupModal = () => setIsCreatGroupModalOpen(false);
   const [groupList, setGroupList] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  // Для данных парсинга
+  const [parsedGroupList, setParsedGroupList] = useState<Group[]>([])
 
   // Загружаем группы
   useEffect(() => {
@@ -127,6 +131,7 @@ export default function Home() {
           </div>
         </div>
       )}
+
       <div className="min-h-screen bg-zinc-100">
         <div className="relative text-white overflow-hidden bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-20">
           <div className="container mx-auto px-4 text-center relative z-10">
@@ -152,6 +157,17 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {groupList.map((group) => (
+              <GroupComponent key={group.number} group={group} />
+            ))}
+          </div>
+          
+          <div className="mb-8 mt-20">
+            <h2 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-5">Информация о группах</h2>
+            <p className="text-muted-foreground">Выберите группу для просмотра информации о ней</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {parsedGroupList.map((group) => (
               <GroupComponent key={group.number} group={group} />
             ))}
           </div>
