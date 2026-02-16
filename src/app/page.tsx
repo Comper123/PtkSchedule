@@ -7,6 +7,8 @@ import GroupComponent from "../components/Group"
 import Header from "@/components/Header"
 import {Calendar, X} from "lucide-react"
 import { ParsedGroupComponent } from "@/components/ParsedGroup";
+import { chunkArray } from "../../lib/utils";
+import Slider from "@/components/Slider";
 
 
 interface createGroupFormData {
@@ -26,8 +28,9 @@ export default function Home() {
   const [groupList, setGroupList] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
+  const items_at_page = 12;
   // Для данных парсинга
-  const [parsedGroupList, setParsedGroupList] = useState<ParsedGroup[]>([])
+  const [parsedGroupList, setParsedGroupList] = useState<ParsedGroup[][]>([])
 
   // Загружаем группы
   useEffect(() => {
@@ -52,8 +55,9 @@ export default function Home() {
     try {
       const response = await fetch('/api/parse/allgroups', {method: 'GET'});
       const parsedGroups: ParsedGroup[] = await response.json();
-      console.log(await parsedGroups);
-      setParsedGroupList(parsedGroups || []);
+      // Вручную пагинируем спаршенные группы 
+      const paginateGroups = chunkArray(parsedGroups, items_at_page);
+      setParsedGroupList(paginateGroups || [[]]);
     } catch (error) {
       console.log(error);
     }
@@ -182,12 +186,15 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-5">Информация о группах</h2>
             <p className="text-muted-foreground">Выберите группу для просмотра информации о ней</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {parsedGroupList.map((group) => (
-              <ParsedGroupComponent key={group.number} number={group.number} />
+          <Slider className="min-h-[560px]" showDots={false}>
+            {parsedGroupList.map((groupPage, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {groupPage.map(gr => (
+                  <ParsedGroupComponent key={gr.number} number={gr.number} />
+                ))}
+              </div>
             ))}
-          </div>
+          </Slider>
         </div>
       </div>
     </div>
