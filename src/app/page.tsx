@@ -6,13 +6,16 @@ import { Group } from "../../lib/db/schema";
 import GroupComponent from "../components/Group"
 import Header from "@/components/Header"
 import {Calendar, X} from "lucide-react"
+import { ParsedGroupComponent } from "@/components/ParsedGroup";
 
 
 interface createGroupFormData {
   number: number
 }
 
-
+interface ParsedGroup {
+  number: number
+}
 
 export default function Home() {
   // Переменные
@@ -24,11 +27,12 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   // Для данных парсинга
-  const [parsedGroupList, setParsedGroupList] = useState<Group[]>([])
+  const [parsedGroupList, setParsedGroupList] = useState<ParsedGroup[]>([])
 
   // Загружаем группы
   useEffect(() => {
-    fetchGroups()
+    fetchGroups();
+    fetchParsedGroup();
   }, [])
   
   // Функция загрузки групп
@@ -38,10 +42,23 @@ export default function Home() {
       const groups: Group[] = await response.json();
       setGroupList(groups || []);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
     setIsLoading(false);
   }
+
+  // Функция загрузки групп с сайта
+  const fetchParsedGroup = async () => {
+    try {
+      const response = await fetch('/api/parse/allgroups', {method: 'GET'});
+      const parsedGroups: ParsedGroup[] = await response.json();
+      console.log(await parsedGroups);
+      setParsedGroupList(parsedGroups || []);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   // Функция создания группы
   const createGroup = async (groupData: createGroupFormData) => {
     try {
@@ -168,7 +185,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {parsedGroupList.map((group) => (
-              <GroupComponent key={group.number} group={group} />
+              <ParsedGroupComponent key={group.number} number={group.number} />
             ))}
           </div>
         </div>

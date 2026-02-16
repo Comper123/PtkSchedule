@@ -328,7 +328,7 @@ async function parseGroupDetails(groupNumber: string): Promise<GroupData | null>
       students
     };
     
-  } catch (error) {
+  } catch (error) { 
     console.error(`Ошибка парсинга группы ${groupNumber}:`, error);
     return null;
   }
