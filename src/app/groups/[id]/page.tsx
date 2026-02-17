@@ -60,7 +60,6 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
   const [isOpenModalEditLesson, setOpenModalEditLesson] = useState<boolean>(false);
   const [editSelectedDay, setEditSelectedDay] = useState<string>("");
   const [editSelectedTime, setEditSelectedTime] = useState<string>("");
-  const [editLessonColor, setEditLessonColor] = useState<string>("");
 
   // Состояния для удаления уроков
   const [isOpenModalDeleteLesson, setOpenModalDeleteLesson] = useState<boolean>(false);
@@ -176,7 +175,6 @@ export default function GroupShedulePage({ params }: {params: Promise<{id: strin
     setEditSelectedDay("");
     setEditSelectedTime("");
     setOpenModalEditLesson(false);
-    setEditLessonColor("");
   }
 
   // Функция для скрытия плашки ошибки создания

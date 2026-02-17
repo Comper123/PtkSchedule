@@ -1,7 +1,7 @@
 'use client';
 
 import { OctagonX, X } from "lucide-react";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode } from "react";
 
 
 interface ModalProps {

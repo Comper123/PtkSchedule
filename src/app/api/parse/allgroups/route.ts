@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { Group } from "lucide-react";
 
@@ -6,7 +6,7 @@ interface Group {
   number: number;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const response = await fetch(
       "https://portal.novsu.ru/univer/timetable/spo",

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { promises as fs } from "fs";
 import path from "path";
@@ -77,7 +77,7 @@ async function loadFromCache(): Promise<CachedData | null> {
       return data;
     }
   } catch (error) {
-    // Файла нет или он поврежден - это нормально
+    console.log(error);
   }
   
   return null;
@@ -382,10 +382,7 @@ async function collectGroupNumbers(): Promise<Set<string>> {
   return groupNumbers;
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET() {
   const startTime = Date.now();
   
   try {
@@ -527,7 +524,7 @@ export async function DELETE() {
   } catch (error) {
     return NextResponse.json({
       success: false,
-      error: "Failed to clear cache",
+      error: error,
     }, { status: 500 });
   }
 }

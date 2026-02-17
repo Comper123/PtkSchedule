@@ -47,7 +47,7 @@ export async function POST(request: NextRequest){
         }
 
         // Создаем урок
-        const [newLesson] = await db.insert(lessons).values({
+        await db.insert(lessons).values({
             subject,
             teacher,
             room,

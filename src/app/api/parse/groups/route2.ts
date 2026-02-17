@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { GroupData, Student } from "@/types/parse";
 
@@ -85,10 +85,7 @@ async function parseGroupDetails(groupNumber: string): Promise<GroupData | null>
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET() {
   try {
     const groups: GroupData[] = [];
     const typesLearning = ["spo", "ochn", "zaochn"];

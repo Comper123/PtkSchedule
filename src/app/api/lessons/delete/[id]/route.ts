@@ -1,4 +1,3 @@
-import { use } from "react";
 import { db } from "../../../../../../lib/db/db";
 import { lessons } from "../../../../../../lib/db/schema";
 import { eq } from "drizzle-orm";

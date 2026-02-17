@@ -1,4 +1,4 @@
-import { integer, pgEnum, serial, time, varchar } from 'drizzle-orm/pg-core';
+import { integer, pgEnum, serial, varchar } from 'drizzle-orm/pg-core';
 import { numeric, pgTable } from "drizzle-orm/pg-core";
 
 export const dayWeekEnum = pgEnum('day_week', [
