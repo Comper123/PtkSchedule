@@ -9,6 +9,7 @@ export async function GET(){
         const groupList = await db.select().from(groups);
         return NextResponse.json(groupList);
     } catch (error) {
+        console.log(error);
         return NextResponse.json({ error: error }, { status: 500});
     }
 }

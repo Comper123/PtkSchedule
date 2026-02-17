@@ -14,6 +14,7 @@ export async function GET(
         const [group] = await db.select().from(groups).where(eq(groups.number, id));
         return NextResponse.json(group);
     } catch (error) {
+        console.log(error);
         return NextResponse.json({error: error}, {status: 500})
     }
 }
