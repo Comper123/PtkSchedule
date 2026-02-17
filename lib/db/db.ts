@@ -1,8 +1,21 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import postgres from 'postgres';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL!,
-});
+// Для локальной
+// import { drizzle } from 'drizzle-orm/node-postgres';
+// import { Pool } from 'pg';
 
-export const db = drizzle(pool);
+
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL!,
+// });
+
+// export const db = drizzle(pool);
+
+
+// Для supabase
+import { drizzle } from 'drizzle-orm/postgres-js'
+
+
+const connectionString = process.env.DATABASE_URL!
+const client = postgres(connectionString, { prepare: false })
+export const db = drizzle(client);
