@@ -12,12 +12,15 @@ interface ModalProps {
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
     type?: 'default'| 'error' | 'success' | 'warning';
     message?: string;
+    className?: string;
 }
 
 export default function Modal({
     isOpen, onClose, title, children, 
     size = 'md', 
-    type = 'default', message = ""
+    type = 'default', 
+    message = "",
+    className = ""
 } : ModalProps){
 
     // Ничего не выводим если модальное закрыто
@@ -47,9 +50,9 @@ export default function Modal({
     return (
       <div className="bg-black z-10 inset-0 fixed bg-opacity-50 w-screen h-screen flex items-center justify-center"
       onClick={closeModal}>
-        <div className={`bg-white z-20 fixed ${widthClasses[size]} rounded-xl min-h-24`}
+        <div className={`bg-white z-20 fixed ${widthClasses[size]} rounded-xl min-h-24 ${className}`}
           onClick={stopPropogation}> 
-          <div className="p-6">
+          <div className="p-6 h-full">
             <div className="flex justify-between mb-5">
               <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
               <X className="hover:cursor-pointer" onClick={(e) => {
@@ -77,7 +80,7 @@ export default function Modal({
                 )}
               </div>
             )}
-            <div>
+            <div className="h-full">
               {children}
             </div>
           </div>

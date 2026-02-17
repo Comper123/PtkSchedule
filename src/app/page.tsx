@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { db } from "../../lib/db/db";
 import { Group } from "../../lib/db/schema";
 import GroupComponent from "../components/Group"
-import Header from "@/components/Header"
-import {Calendar, X} from "lucide-react"
+import {Calendar, X, Ban} from "lucide-react"
 import { ParsedGroupComponent } from "@/components/ParsedGroup";
 import { chunkArray } from "../../lib/utils";
 import Slider from "@/components/Slider";
-
+import { GroupData } from "@/types/parse";
+import DetailModal from "@/components/GroupDetailModal";
+import Loader from "@/components/ui/Loader";
 
 interface createGroupFormData {
   number: number
@@ -22,15 +22,21 @@ interface ParsedGroup {
 export default function Home() {
   // Переменные
   const [isCreateGroupModalOpen, setIsCreatGroupModalOpen] = useState(false);
+  const [isDetailGroupModalOpen, setIsDetailGroupModalOpen] = useState(false);
+  const [detailGroupNumber, setDetailGroupNumber] = useState<number | null>(null)
+
   // Функции открытия закрытия модальных окон
   const openCreateGroupModal = () => setIsCreatGroupModalOpen(true);
   const closeCreateGroupModal = () => setIsCreatGroupModalOpen(false);
   const [groupList, setGroupList] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLoadingDetailGroup, setIsLoadingDetailGroup] = useState(false);
 
   const items_at_page = 12;
+
   // Для данных парсинга
   const [parsedGroupList, setParsedGroupList] = useState<ParsedGroup[][]>([])
+  const [groupDetail, setGroupDetail] = useState<GroupData | null>(null);
 
   // Загружаем группы
   useEffect(() => {
@@ -38,6 +44,31 @@ export default function Home() {
     fetchParsedGroup();
   }, [])
   
+  // Функция для загрузки детальной информации о группе
+  const fetchGroupDetails = async (number: number) => {
+    setIsLoadingDetailGroup(true);
+    try{
+      const response = await fetch(`/api/parse/groupdetail/${number}`);
+      if (response.ok){
+        setGroupDetail(await response.json());
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingDetailGroup(false);
+    }
+  }
+
+  // Функция отображения детальной информации о группе
+  const openGroupDetails = (number: number) => {
+    setIsDetailGroupModalOpen(true);
+    fetchGroupDetails(number);
+  }
+
+  const closeDetailGroupModal = () => {
+    setIsDetailGroupModalOpen(false);
+  }
+
   // Функция загрузки групп
   const fetchGroups = async () => {
     try {
@@ -113,12 +144,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-white">
-        <div className="relative mb-4">
-          {/* Тонкое кольцо */}
-          <div className="animate-spin rounded-full h-16 w-16 border-2 border-transparent border-t-blue-500 border-r-transparent"></div>
-        </div>
-        <div className="text-gray-500 font-medium tracking-wide">Загрузка данных<span className="loading-dots"></span></div>
-        <div className="mt-2 text-gray-400 text-sm">Пожалуйста, подождите</div>
+        <Loader></Loader>
       </div>
     );
   }
@@ -153,9 +179,19 @@ export default function Home() {
         </div>
       )}
 
+      {isDetailGroupModalOpen && (
+        <DetailModal 
+          isOpen={isDetailGroupModalOpen} 
+          onClose={closeDetailGroupModal}
+          grNumber={detailGroupNumber}
+          groupDetail={groupDetail}
+          isLoading={isLoadingDetailGroup}>
+        </DetailModal>
+      )}
+
       <div className="min-h-screen bg-zinc-100">
-        <div className="relative text-white overflow-hidden bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-20">
-          <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="inset-0 bg-[#6D6FF3] text-white overflow-hidden bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-20">
+          <div className="container mx-auto px-4 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-6">
               <Calendar className="w-8 h-8" />
             </div>
@@ -164,7 +200,6 @@ export default function Home() {
               Удобная система управления расписанием для учебных групп
             </p>
           </div>
-          <div className="absolute inset-0 bg-[#6D6FF3]"></div>
         </div>
 
         <div className="container mx-auto px-4 py-12">
@@ -186,15 +221,29 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-5">Информация о группах</h2>
             <p className="text-muted-foreground">Выберите группу для просмотра информации о ней</p>
           </div>
-          <Slider className="min-h-[560px]" showDots={false}>
-            {parsedGroupList.map((groupPage, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groupPage.map(gr => (
-                  <ParsedGroupComponent key={gr.number} number={gr.number} />
-                ))}
-              </div>
-            ))}
-          </Slider>
+
+          {parsedGroupList.length === 0 ? (
+            <div className="w-full flex items-center flex-col">
+              <Ban className="text-red-600 mb-4 mt-8"/>
+              <p className="w-max text-gray-600 text-xl">Извините, группы не загрузились</p>
+              <p className="w-max text-gray-400 mt-2 font-semibold">Проверьте соединение с интернетом и повторите попытку.</p>
+            </div>
+          ) : (
+            <Slider className="min-h-[560px]" showDots={false}>
+              {parsedGroupList.map((groupPage, index) => (
+                <div key={index} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {groupPage.map(gr => (
+                    <div key={gr.number} onClick={() => {
+                        openGroupDetails(gr.number);
+                        setDetailGroupNumber(gr.number);
+                      }}> 
+                      <ParsedGroupComponent  number={gr.number}/>
+                    </div>
+                  ))}
+                </div> 
+              ))}
+            </Slider>
+          )}
         </div>
       </div>
     </div>

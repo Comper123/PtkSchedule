@@ -56,14 +56,14 @@ export default function Slider({
         <div>
           <button
             onClick={goToPrevious}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all hover:scale-110 z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all hover:scale-110 z-3"
             aria-label="Previous slide"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all hover:scale-110 z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all hover:scale-110 z-3"
             aria-label="Next slide"
           >
             <ChevronRight className="w-5 h-5" />

@@ -1,24 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
+import { GroupData, Student } from "@/types/parse";
 
-interface Student {
-  number: number;
-  name: string;
-  status: string;
-  personId: string;
-}
-
-interface GroupData {
-  number: number;
-  countStudent: number;
-  yearReceipt: number;
-  course: number;
-  direction: string;
-  profile: string;
-  institution: string;
-  formTraining: string;
-  students: Student[];
-}
 
 async function parseGroupDetails(groupNumber: string): Promise<GroupData | null> {
   try {

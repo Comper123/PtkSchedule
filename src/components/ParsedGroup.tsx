@@ -7,8 +7,7 @@ interface ParsedGroupProps {
 export function ParsedGroupComponent({ number }: ParsedGroupProps) {
 
   return (
-    <div className="p-6 hover:border-[#6D6FF3] border-2 transition-all duration-300 cursor-pointer border-transparent hover:border-primary group bg-white rounded-xl"
-        onClick={() => {}}>
+    <div className="p-6 hover:border-[#6D6FF3] border-2 transition-all duration-300 cursor-pointer border-transparent hover:border-primary group bg-white rounded-xl">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-[#EFEFFD] p-3 flex items-center justify-center">
