@@ -16,6 +16,10 @@ interface createGroupFormData {
   number: number
 }
 
+interface EditGroupData{
+  countStudent: string
+}
+
 interface ParsedGroup {
   number: number
 }
@@ -173,6 +177,36 @@ export default function Home() {
     setIsRemoveGroupModalOpen(false);
   }
 
+  const editGroup = async (groupData: EditGroupData) => {
+    try {
+      const response = await fetch(`/api/groups/${editGroupNumber}/edit`, {
+        method: "PUT",
+        body: JSON.stringify(groupData)
+      });
+      if (response.ok){
+        // Обновляем существующую группу
+        setGroupList(prevGroups => {
+          return prevGroups.map(group =>
+            group.number === editGroupNumber ? { ...group, countStudent: groupData.countStudent} : group
+          )
+        })
+        closeModalEditGroup();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handleEditGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const countStValue = formData.get('countSt') as string; 
+    const newGroupData = {
+      countStudent: countStValue
+    }
+    await editGroup(newGroupData);
+  }
+  
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-white">
@@ -186,9 +220,19 @@ export default function Home() {
       <Modal 
         isOpen={isEditGroupModalOpen} 
         onClose={closeModalEditGroup}
-        title={`Изменение группы ${editGroupNumber}`}>
+        title={`Изменение группы ${editGroupNumber}`}
+        size="sm">
         <div>
-
+          <form onSubmit={handleEditGroup}>
+            <div className="mb-6">
+              <label htmlFor="countSt" className="block text-sm font-medium text-gray-700 mb-2">Количество студентов<span className="text-red-700">*</span></label>
+              <input id="countSt" name="countSt" type="number" placeholder="25"
+                className="h-11 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
+            </div>
+            <div className="flex justify-end">
+              <button type="submit" className="flex-1 px-4 py-3 bg-[#6D6FF3] text-white rounded-lg hover:bg-blue-600 transition-all disabled:opacity-50">Изменить</button>
+            </div>
+          </form>
         </div>
       </Modal>
 
