@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Group } from "../../lib/db/schema";
 import Link from "next/link";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Users, Trash, Pencil, ArrowUpRight } from "lucide-react";
 
 interface GroupPageProps {
   group: Group;
+  edit: (e: React.MouseEvent, number: string) => void;
+  remove: (e: React.MouseEvent, number: string) => void;
 }
 
-export default function GroupComponent({ group }: GroupPageProps) {
+export default function GroupComponent({ 
+  group, edit, remove }: GroupPageProps) {
   const [groupValue, setGroup] = useState<Group>(group);
   return (
     <Link href={`/groups/${group.number}`} className="block">
@@ -28,9 +31,24 @@ export default function GroupComponent({ group }: GroupPageProps) {
           </div>
           <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-[#6D6FF3] group-hover:translate-x-2 transition-all" />
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Users className="w-4 h-4" />
-          <span className="text-sm">{group.countStudent} студентов</span>
+        <div className="flex justify-between gap-2 text-muted-foreground">
+          <div className="flex gap-2">
+            <Users className="w-4 h-4" />
+            <span className="text-sm">{group.countStudent} студентов</span>
+          </div>
+          <div className="flex gap-2">
+            <div className="bg-red-400/20 flex items-center justify-center h-9 w-9 rounded-md hover:-translate-y-1 duration-300"
+                 onClick={(e) => remove(e)}>
+              <Trash className="h-5 w-5 text-red-400"></Trash>
+            </div>
+            <div className="bg-orange-600/20 flex items-center justify-center h-9 w-9 rounded-md hover:-translate-y-1 duration-300"
+                 onClick={(e) => edit(e)}>
+              <Pencil className="h-5 w-5 text-orange-600"></Pencil>
+            </div>
+            <div className="border-[#6d6ff3ab] border border-2 flex items-center justify-center h-9 w-9 rounded-md hover:-translate-y-1 duration-300">
+              <ArrowUpRight className="h-5 w-5 text-[#6D6FF3]"></ArrowUpRight>
+            </div>
+          </div>
         </div>
       </div>
     </Link>

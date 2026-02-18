@@ -10,6 +10,7 @@ import Slider from "@/components/Slider";
 import { GroupData } from "@/types/parse";
 import DetailModal from "@/components/GroupDetailModal";
 import Loader from "@/components/ui/Loader";
+import Modal from "@/components/ui/Modal";
 
 interface createGroupFormData {
   number: number
@@ -23,7 +24,12 @@ export default function Home() {
   // Переменные
   const [isCreateGroupModalOpen, setIsCreatGroupModalOpen] = useState(false);
   const [isDetailGroupModalOpen, setIsDetailGroupModalOpen] = useState(false);
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
+  const [isRemoveGroupModalOpen, setIsRemoveGroupModalOpen] = useState(false);
+
   const [detailGroupNumber, setDetailGroupNumber] = useState<number | null>(null)
+  const [editGroupNumber, setEditGroupNumber] = useState<string>("");
+  const [removeGroupNumber, setRemoveGroupNumber] = useState<string>("");
 
   // Функции открытия закрытия модальных окон
   const openCreateGroupModal = () => setIsCreatGroupModalOpen(true);
@@ -141,6 +147,32 @@ export default function Home() {
     await createGroup(newGroupData);
   }
 
+  // Функция открытия окна изменения группы
+  const openModalEditGroup = (e: React.MouseEvent, number: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditGroupNumber(number);
+    setIsEditGroupModalOpen(true);
+  }
+
+  // Функция закрытия окна изменения группы
+  const closeModalEditGroup = () => {
+    setIsEditGroupModalOpen(false);
+  }
+
+  // Функция открытия окна удаления группы
+  const openModalRemoveGroup = (e: React.MouseEvent, number: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRemoveGroupNumber(number);
+    setIsRemoveGroupModalOpen(true);
+  }
+
+  // Функция закрытия окна удаления группы
+  const closeModalRemoveGroup = () => {
+    setIsRemoveGroupModalOpen(false);
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center w-full h-[100vh] bg-white">
@@ -151,6 +183,24 @@ export default function Home() {
 
   return (
     <div> 
+      <Modal 
+        isOpen={isEditGroupModalOpen} 
+        onClose={closeModalEditGroup}
+        title={`Изменение группы ${editGroupNumber}`}>
+        <div>
+
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={isRemoveGroupModalOpen} 
+        onClose={closeModalRemoveGroup}
+        title={`Удаление группы ${removeGroupNumber}`}>
+        <div>
+
+        </div>
+      </Modal>
+
       {isCreateGroupModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
@@ -213,7 +263,11 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {groupList.map((group) => (
-              <GroupComponent key={group.number} group={group} />
+              <GroupComponent 
+                key={group.number} 
+                group={group} 
+                edit={(e) => openModalEditGroup(e, group.number)} 
+                remove={(e) => openModalRemoveGroup(e, group.number)}/>
             ))}
           </div>
           
